@@ -9,7 +9,17 @@ firebase.auth().onAuthStateChanged(async function(user) {
     // direct traffic based on who logged in
         // if user doesn't have a pending order, direct them to the order page
         // if user has a pending order, direct them to that page
+        console.log(user.uid)
+        let querySnapshot = await db.collection('orders')
+              .where('userID', '==', user.uid)
+              .where('status', '==', 'pending')
+              .get()
+        
+          console.log(querySnapshot.size)
+      if (querySnapshot.size == 0){// there's no pending orders, display order page
+          
 
+          
     // order page: Add a bunch of event listeners
 
         // Log out button
@@ -33,10 +43,15 @@ firebase.auth().onAuthStateChanged(async function(user) {
             // stores values from html inputs on the course and hole #, and current time
                 
               let std_order = document.querySelector('.std_order')
-              std_order.addEventListener('submit', async function(event){
-                let course = document.querySelector('.course').value
-                let hole = document.querySelector('hole').value
+              std_order.addEventListener('click', async function(event){
+
+                // uncomment this later when html is available
+                // let course = document.querySelector('.course').value
+                // let hole = document.querySelector('hole').value
                 // will need to add error handling later if no course/hole selected
+
+                let course = 'Sunset Hills'
+                let hole = 5
                 let ordertime = firebase.firestore.FieldValue.serverTimestamp()
                 let priority = 'standard'
                 let userID = user.uid
@@ -63,17 +78,13 @@ firebase.auth().onAuthStateChanged(async function(user) {
                 document.location.href = 'index.html'
               })
  
-            
-    // on the order pending page...
-        // go get details on the current order
-              // lambda function:  pull outstanding order for that user from firebase
-              
-              let querySnapshot = await db.collection('orders')
-              .where('userId', '==', user.uid)
-              .where('status', '==', 'pending')
-              .get()
+      }
+    
+      else {  // there's a pending order, so display that info and a cancel button 
 
-              let orderdetails = querySnapshot.docs
+              let orderdetails = querySnapshot.docs[0].data()
+              console.log(orderdetails)
+              let ordernum = querySnapshot.docs[0].id
               let timeleft = orderdetails.promisetime - firebase.firestore.FieldValue.serverTimestamp()            
               
               // update html to display order details and wait time
@@ -99,13 +110,21 @@ firebase.auth().onAuthStateChanged(async function(user) {
             // cancel button
                 // grab current order info
                     // should already be stored at this point...
-                // send to firebase w/ update on "status" to cancelled
-                      await db.collection('orders').update({
-                        status: 'cancelled'
-                      })
+              //  put in a cancel button
+              document.querySelector('.cancelbutton').innerHTML = `
+                  <button class="text-red-500 underline cancel">Cancel Order</button>
+                  `
+                    // send to firebase w/ update on "status" to cancelled
+                document.querySelector('.cancel').addEventListener('click', async function(event){
+                  await db.collection('orders').doc(ordernum).update({
+                    status: 'cancelled'
+                  })
 
-                // move back to order page
-                    document.location.href = 'index.html'
+                  // move back to order page
+                      document.location.href = 'index.html'
+
+                })
+      }    
             // refresh?  a button to refresh from firebase, or we code in an autorefresh once/min?
 
   
