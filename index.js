@@ -1,12 +1,11 @@
 firebase.auth().onAuthStateChanged(async function(user) {
-      
-  let db = firebase.firestore()
 
+  
+  
   if (user) {
     // Signed in
     console.log('signed in')
-
-      
+    let db = firebase.firestore()
     // direct traffic based on who logged in
         // if user doesn't have a pending order, direct them to the order page
         // if user has a pending order, direct them to that page
@@ -26,7 +25,12 @@ firebase.auth().onAuthStateChanged(async function(user) {
               })
 
         // order buttons (could probably do this with 1 section of code with a tweak based on premium vs std)
-              // stores values from html inputs on the course and hole #, and current time
+            // put at order button in the empty div for it
+            document.querySelector('.order-button').innerHTML = `
+            <button class="text-blue-500 underline std_order">Order!</button>
+             `
+        
+            // stores values from html inputs on the course and hole #, and current time
                 
               let std_order = document.querySelector('.std_order')
               std_order.addEventListener('submit', async function(event){
@@ -50,7 +54,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
                   promisetime: ordertime + 15
                   // add some complexity later for dynamic wait times based on order volume?
                 }
-                
+                let db = firebase.firestore()
                 let docRef =  await db.collection('orders').add(order)
                 let ordernum = docRef.id
 
@@ -63,6 +67,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
     // on the order pending page...
         // go get details on the current order
               // lambda function:  pull outstanding order for that user from firebase
+              
               let querySnapshot = await db.collection('orders')
               .where('userId', '==', user.uid)
               .where('status', '==', 'pending')
