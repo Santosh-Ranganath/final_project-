@@ -1,8 +1,7 @@
 firebase.auth().onAuthStateChanged(async function(user) {
 
-  if (user) {
-    // Signed in
-
+  if (user) { // Signed in
+ 
     console.log('signed in')
     let db = firebase.firestore()
 
@@ -13,6 +12,12 @@ firebase.auth().onAuthStateChanged(async function(user) {
       document.location.href = 'index.html'
     })
 
+    // pull in information on current courses available
+      let courseSnapshot = await db.collection('courses').orderBy('name').get()
+      let courses = []
+      for (i=0; i<courseSnapshot.size; i++){
+        courses[i] = courseSnapshot.docs[i].data()
+      }
 
     // direct traffic based on who logged in
         // if user doesn't have a pending order, direct them to the order page
@@ -33,34 +38,14 @@ firebase.auth().onAuthStateChanged(async function(user) {
                 <div class="course">
               <label class = "text-white text-xl">Choose a Course:</label>
               <select class = "course-selected" name="course" id="courseName">
-                <option value="Sunset Hills">Sunset Hills</option>
-                <option value="Augusta National">Augusta National</option>
-                <option value="Pine Brook">Pine Brook</option>
-                <option value="Saddle Ridge">Saddle Ridge</option>
+                
               </select>
               </div>
               
               <div class="hole mt-8">
                   <label class = "text-white text-xl mt-8">Hole Location:</label>
                   <select class = "hole-selected" name="hole" id="holeNumber">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                    <option value="11">11</option>
-                    <option value="12">12</option>
-                    <option value="13">13</option>
-                    <option value="14">14</option>
-                    <option value="15">15</option>
-                    <option value="16">16</option>
-                    <option value="17">17</option>
-                    <option value="18">18</option>
+                    
                   </select>
               </div>
               
@@ -81,7 +66,36 @@ firebase.auth().onAuthStateChanged(async function(user) {
             
             `
 
-        // order page: Add a bunch of event listeners
+        // dynamically update course selection from firebase
+          for (i=0; i<courses.length; i++) {
+            document.querySelector('.course-selected').insertAdjacentHTML('beforeend', 
+            `
+            <option value="${courses[i].name}">${courses[i].name}</option>
+            `
+            )
+          }
+        
+        // event listener to update hole #'s once a course is selected
+          document.querySelector('.course-selected').addEventListener('change', async function(event) {
+            let course = document.querySelector('.course-selected').value
+            let holeSnapshot = await db.collection('courses')
+                                       .where('name', '==', course)
+                                       .get()
+            let holes = holeSnapshot.docs[0].data()
+
+            console.log(holes)
+            
+            for (i=1; i<holes.holes+1; i++) {
+              document.querySelector('.hole-selected').insertAdjacentHTML('beforeend', 
+              `
+              <option value="${i}">${i}</option>
+              `
+              )
+            }
+          })
+          
+        
+            // order page: Add a bunch of event listeners
 
              
         // order buttons (could probably do this with 1 section of code with a tweak based on premium vs std)
@@ -94,7 +108,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
               std_order.addEventListener('click', async function(event){
                 event.preventDefault()
                 
-                let course = document.querySelector('.course-selected').value
+                course = document.querySelector('.course-selected').value
                 
                 let hole = document.querySelector('.hole-selected').value
                 // will need to add error handling later if no course/hole selected
@@ -125,7 +139,6 @@ firebase.auth().onAuthStateChanged(async function(user) {
               })
  
       }
-    
       else {  // there's a pending order, so display that info and a cancel button 
 
               let orderdetails = querySnapshot.docs[0].data()
@@ -171,8 +184,8 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
   
 
-  } else {
-    // Signed out
+  } else {  // Signed out
+   
     console.log('signed out')
 
     // Initializes FirebaseUI Auth
