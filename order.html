@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart Buddy</title>
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body class = "bg-green-900">
+    <div class= "order-page text-center mx-auto">
+        <h1 class ="text-4xl font-bold text-yellow-300 m-4">
+          CART BUDDY
+          </h1>
+          
+          <a href ="index.html" class = "  text-white text-md bg-blue-600 rounded p-2 hover:bg-yellow-300 text-center">Logout</a>
+          <a href ="index.html" class = " text-white text-md bg-gray-600 rounded ml-4 p-2 hover:bg-yellow-300 text-center">Orders</a>
+          
+      </div>
+
+<!-- Begin Input Form -->
+<form class="text-center mt-8" action="index.html">
+
+  <div class="course">
+<label class = "text-white text-xl">Choose a Course:</label>
+<select name="course" id="courseName">
+  <option value="Sunset Hills">Sunset Hills</option>
+  <option value="Augusta National">Augusta National</option>
+  <option value="Pine Brook">Pine Brook</option>
+  <option value="Saddle Ridge">Saddle Ridge</option>
+</select>
+</div>
+
+<div class="hole mt-8">
+    <label class = "text-white text-xl mt-8">Hole Location:</label>
+    <select name="hole" id="holeNumber">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+      <option value="11">11</option>
+      <option value="12">12</option>
+      <option value="13">13</option>
+      <option value="14">14</option>
+      <option value="15">15</option>
+      <option value="16">16</option>
+      <option value="17">17</option>
+      <option value="18">18</option>
+    </select>
+</div>
+
+<div class="premium-button mt-8">
+    <button class="block mx-auto text-white bg-blue-400 rounded px-4 py-8 hover:bg-red-500">Request Premium Service</button> 
+</div>
+
+<div class="standard-button mt-8">
+    <button class="block mx-auto text-white bg-gray-400 rounded px-4 py-8 hover:bg-red-500 mb-2">Request Standard Service</button> 
+</div>
+
+
+</form>
+
+<img class ="rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
+
+</body>
+
+</html>
