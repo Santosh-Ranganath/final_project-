@@ -5,6 +5,12 @@ firebase.auth().onAuthStateChanged(async function(user) {
     console.log('signed in')
     let db = firebase.firestore()
 
+    //adds the navigation buttons only when a user is logged in 
+    document.querySelector('.navigation').insertAdjacentHTML('beforeend',
+    `<a href ="index.html" class = "sign-out text-white text-md bg-blue-600 rounded p-2 hover:bg-yellow-300 text-center">Logout</a>
+    <a href ="index.html" class = " text-white text-md bg-gray-600 rounded ml-4 p-2 hover:bg-yellow-300 text-center">Orders</a>
+    `)
+
     // put an event listener on the sign out button
     document.querySelector('.sign-out').addEventListener('click', function(event) {
       console.log('sign out clicked')
@@ -12,11 +18,12 @@ firebase.auth().onAuthStateChanged(async function(user) {
       document.location.href = 'index.html'
     })
 
-    // pull in information on current courses available
+    // pull in information on current courses available--is this 4 arrays of 4 vs. 1 array of 4?
       let courseSnapshot = await db.collection('courses').orderBy('name').get()
       let courses = []
       for (i=0; i<courseSnapshot.size; i++){
         courses[i] = courseSnapshot.docs[i].data()
+        console.log(courses)
       }
 
     // direct traffic based on who logged in
@@ -84,6 +91,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
             let holes = holeSnapshot.docs[0].data()
 
             console.log(holes)
+            console.log(course)
             
             for (i=1; i<holes.holes+1; i++) {
               document.querySelector('.hole-selected').insertAdjacentHTML('beforeend', 
@@ -156,6 +164,10 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
               <div class="mt-8">
                   <button class="cancel block mx-auto text-white bg-red-600 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Cancel Request</button> 
+              </div>
+
+              <div class="cancel mt-8">
+                  <button class="block mx-auto text-white bg-blue-500 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Order Complete</button> 
               </div>
 
               <img class ="rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
