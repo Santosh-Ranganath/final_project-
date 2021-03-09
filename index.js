@@ -23,7 +23,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
       let courses = []
       for (i=0; i<courseSnapshot.size; i++){
         courses[i] = courseSnapshot.docs[i].data()
-        console.log(courses)
+        
       }
 
     // direct traffic based on who logged in
@@ -81,25 +81,14 @@ firebase.auth().onAuthStateChanged(async function(user) {
             `
             )
           }
+
+        // dyanmically update the #holes based on default course selection
+            updateholes(courses[0].name)
         
-        // event listener to update hole #'s once a course is selected
+        // event listener to update hole #'s once a new course is selected
           document.querySelector('.course-selected').addEventListener('change', async function(event) {
             let course = document.querySelector('.course-selected').value
-            let holeSnapshot = await db.collection('courses')
-                                       .where('name', '==', course)
-                                       .get()
-            let holes = holeSnapshot.docs[0].data()
-
-            console.log(holes)
-            console.log(course)
-            
-            for (i=1; i<holes.holes+1; i++) {
-              document.querySelector('.hole-selected').insertAdjacentHTML('beforeend', 
-              `
-              <option value="${i}">${i}</option>
-              `
-              )
-            }
+            updateholes(course)
           })
           
         
@@ -123,6 +112,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
                 console.log(`${course}-hole${hole}`)
                 let ordertime = firebase.firestore.FieldValue.serverTimestamp()
+                
                 let priority = 'standard'
                 let userID = user.uid
                 let status = 'pending'
@@ -136,9 +126,10 @@ firebase.auth().onAuthStateChanged(async function(user) {
                   priority: priority,
                   userID: userID,
                   status: status,
-                  promisetime: ordertime + 15
+                  promisetime: ordertime
                   // add some complexity later for dynamic wait times based on order volume?
                 }
+                
                 let db = firebase.firestore()
                 let docRef =  await db.collection('orders').add(order)
                 let ordernum = docRef.id
@@ -153,12 +144,12 @@ firebase.auth().onAuthStateChanged(async function(user) {
               console.log(orderdetails)
               let ordernum = querySnapshot.docs[0].id
               let timeleft = orderdetails.promisetime - firebase.firestore.FieldValue.serverTimestamp()            
-              
+              console.log(orderdetails.ordertime)
               // update html to display order details and wait time
               document.querySelector('.orderdetails').innerHTML =  
               `
               <div class="mt-8 ">
-                  <h1 class="text-center text-2xl text-white"> Attendant Requested!</h1>]
+                  <h1 class="text-center text-2xl text-white"> Attendant Requested!</h1>
                   <h2 class="text-center text-2xl text-white"> ETA:XX Minutes</h2>
               </div>
 
@@ -166,8 +157,8 @@ firebase.auth().onAuthStateChanged(async function(user) {
                   <button class="cancel block mx-auto text-white bg-red-600 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Cancel Request</button> 
               </div>
 
-              <div class="cancel mt-8">
-                  <button class="block mx-auto text-white bg-blue-500 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Order Complete</button> 
+              <div class=" mt-8">
+                  <button class="complete block mx-auto text-white bg-blue-500 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Order Complete</button> 
               </div>
 
               <img class ="rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
@@ -180,13 +171,25 @@ firebase.auth().onAuthStateChanged(async function(user) {
                     // should already be stored at this point...
             
                   let cancelbutton = document.querySelector('.cancel')
-                  console.log(cancelbutton)
+             
                     // send to firebase w/ update on "status" to cancelled
                 document.querySelector('.cancel').addEventListener('click', async function(event){
                   await db.collection('orders').doc(ordernum).update({
                     status: 'cancelled'
                   })
+                  // move back to order page
+                      document.location.href = 'index.html'
 
+                })
+
+          // same thing for order complete button
+                    let completebutton = document.querySelector('.complete')
+                      
+                    // send to firebase w/ update on "status" to cancelled
+                document.querySelector('.complete').addEventListener('click', async function(event){
+                  await db.collection('orders').doc(ordernum).update({
+                    status: 'complete'
+                  })
                   // move back to order page
                       document.location.href = 'index.html'
 
@@ -219,7 +222,31 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
 
   }
+
 })
 
 
 // Any functions created go below this line (outside the firebase stuff)
+
+async function updateholes(course) { //updates the hole selection drop down based on name of course
+  let db = firebase.firestore()
+ 
+  let holeSnapshot = await db.collection('courses')
+                                     .where('name', '==', course)
+                                     .get()
+          let holes = holeSnapshot.docs[0].data()
+
+  // first clear out any html in the drop down to start fresh
+  document.querySelector('.hole-selected').innerHTML = null
+
+  // then add new html for the # of holes
+          
+          for (i=1; i<holes.holes+1; i++) {
+            document.querySelector('.hole-selected').insertAdjacentHTML('beforeend', 
+            `
+            <option value="${i}">${i}</option>
+            `
+            )
+          }
+
+}
