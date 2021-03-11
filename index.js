@@ -7,6 +7,9 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
     // Time information Calculation for entire script 
     let currentDate = new Date() 
+    let currentHour = (currentDate.getHours() < 10) ? "0" + currentDate.getHours() : currentDate.getHours()
+    let currentMinute = (currentDate.getMinutes() < 10) ? "0" + currentDate.getMinutes() : currentDate.getMinutes()
+    let currentTime = currentHour + ":" + currentMinute 
     // console.log(currentDate)
     let fifteenminutesLater = new Date(currentDate.getTime() + (15*60*1000))
     let formatHour = (fifteenminutesLater.getHours() < 10) ? "0" + fifteenminutesLater.getHours() : fifteenminutesLater.getHours()
@@ -127,7 +130,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
                 // will need to add error handling later if no course/hole selected
 
                 console.log(`${course}-hole${hole}`)
-                let ordertime = firebase.firestore.FieldValue.serverTimestamp()
+                let ordertime = currentTime
                 
                 let priority = 'standard'
                 let userID = user.uid
@@ -158,16 +161,18 @@ firebase.auth().onAuthStateChanged(async function(user) {
       else {  // there's a pending order, so display that info and a cancel button 
 
               let orderdetails = querySnapshot.docs[0].data()
-              console.log(orderdetails)
+              // console.log(orderdetails)
               let ordernum = querySnapshot.docs[0].id
-              let timeleft = orderdetails.promisetime - firebase.firestore.FieldValue.serverTimestamp()            
-              console.log(orderdetails.ordertime)
+              let timeleft = orderdetails.promisetime - currentTime          
+              console.log(currentTime)
+              console.log(orderdetails.promisetime)
+              console.log(timeleft)
               // update html to display order details and wait time
               document.querySelector('.orderdetails').innerHTML =  
               `
               <div class="mt-8 ">
                   <h1 class="text-center text-2xl text-white"> Attendant Requested!</h1>
-                  <h2 class="text-center text-2xl text-white"> ETA: ${standardTime}</h2>
+                  <h2 class="text-center text-2xl text-white"> ETA: ${timeleft}</h2>
               </div>
 
               <div class="mt-8">
