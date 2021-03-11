@@ -5,10 +5,23 @@ firebase.auth().onAuthStateChanged(async function(user) {
     console.log('signed in')
     let db = firebase.firestore()
 
+    // Time information Calculation for entire script 
+    let currentDate = new Date() 
+    // console.log(currentDate)
+    let fifteenminutesLater = new Date(currentDate.getTime() + (15*60*1000))
+    let formatHour = (fifteenminutesLater.getHours() < 10) ? "0" + fifteenminutesLater.getHours() : fifteenminutesLater.getHours()
+    let formatMinute = (fifteenminutesLater.getMinutes() < 10) ? "0" + fifteenminutesLater.getMinutes() : fifteenminutesLater.getMinutes()
+    let standardTime = formatHour + ":" + formatMinute
+
+    let fiveminutesLater = new Date(currentDate.getTime() + (5*60*1000))
+    let formatHourPremium = (fiveminutesLater.getHours() < 10) ? "0" + fiveminutesLater.getHours() : fiveminutesLater.getHours()
+    let formatMinutePremium = (fiveminutesLater.getMinutes() < 10) ? "0" + fiveminutesLater.getMinutes() : fiveminutesLater.getMinutes()
+    let premiumTime = formatHourPremium + ":" + formatMinutePremium
+    // console.log(`Your ETA is ${premiumTime} `)
+
     //adds the navigation buttons only when a user is logged in 
     document.querySelector('.navigation').insertAdjacentHTML('beforeend',
     `<a href ="index.html" class = "sign-out text-white text-md bg-blue-600 rounded p-2 hover:bg-yellow-300 text-center">Logout</a>
-    <a href ="index.html" class = " text-white text-md bg-gray-600 rounded ml-4 p-2 hover:bg-yellow-300 text-center">Orders</a>
     `)
 
     // put an event listener on the sign out button
@@ -23,7 +36,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
       let courses = []
       for (i=0; i<courseSnapshot.size; i++){
         courses[i] = courseSnapshot.docs[i].data()
-        
+        console.log(courses[0].image)
       }
 
     // direct traffic based on who logged in
@@ -56,18 +69,18 @@ firebase.auth().onAuthStateChanged(async function(user) {
                   </select>
               </div>
               
-              <div class="premium-button mt-8">
-                  <button class="block mx-auto text-white bg-blue-400 rounded px-4 py-8 hover:bg-red-500">Request Premium Service</button> 
-              </div>
+           
+                  <button class="premium-button mt-8 block mx-auto text-white bg-blue-400 rounded px-4 py-8 hover:bg-red-500">Request Premium Service <p>(ETA: ${premiumTime}) </button> 
+            
               
-              <div class="standard-button mt-8">
-                  <button class="block mx-auto text-white bg-gray-400 rounded px-4 py-8 hover:bg-red-500 mb-2">Request Standard Service</button> 
-              </div>
+              
+                  <button class="standard-button mt-8 block mx-auto text-white bg-gray-400 rounded px-4 py-8 hover:bg-red-500 mb-2">Request Standard Service <p>(ETA: ${standardTime})</p></button> 
+             
               
               
               </form>
               
-              <img class ="rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
+              <img class ="image-selected rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
             
             
             
@@ -81,7 +94,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
             `
             )
           }
-
+         
         // dyanmically update the #holes based on default course selection
             updateholes(courses[0].name)
         
@@ -116,6 +129,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
                 let priority = 'standard'
                 let userID = user.uid
                 let status = 'pending'
+               
 
                 // send this info to firebase (move to lambda function later)
 
@@ -126,7 +140,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
                   priority: priority,
                   userID: userID,
                   status: status,
-                  promisetime: ordertime
+                  promisetime: standardTime
                   // add some complexity later for dynamic wait times based on order volume?
                 }
                 
@@ -150,7 +164,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
               `
               <div class="mt-8 ">
                   <h1 class="text-center text-2xl text-white"> Attendant Requested!</h1>
-                  <h2 class="text-center text-2xl text-white"> ETA:XX Minutes</h2>
+                  <h2 class="text-center text-2xl text-white"> ETA: ${standardTime}</h2>
               </div>
 
               <div class="mt-8">
