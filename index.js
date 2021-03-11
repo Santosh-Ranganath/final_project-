@@ -36,7 +36,6 @@ firebase.auth().onAuthStateChanged(async function(user) {
       let courses = []
       for (i=0; i<courseSnapshot.size; i++){
         courses[i] = courseSnapshot.docs[i].data()
-        console.log(courses[0].image)
       }
 
     // direct traffic based on who logged in
@@ -80,9 +79,8 @@ firebase.auth().onAuthStateChanged(async function(user) {
               
               </form>
               
-              <img class ="image-selected rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
-            
-            
+              <div class = "image-selected"> </div>
+              
             
             `
 
@@ -95,15 +93,20 @@ firebase.auth().onAuthStateChanged(async function(user) {
             )
           }
          
-        // dyanmically update the #holes based on default course selection
+        // dyanmically update the #holes and Img based on default course selection
             updateholes(courses[0].name)
+            updateimg(courses[0].name)
         
-        // event listener to update hole #'s once a new course is selected
+        // event listener to update hole #'s and Img once a new course is selected
           document.querySelector('.course-selected').addEventListener('change', async function(event) {
             let course = document.querySelector('.course-selected').value
             updateholes(course)
           })
           
+          document.querySelector('.course-selected').addEventListener('change', async function(event) {
+            let course = document.querySelector('.course-selected').value
+            updateimg(course)
+          })
         
             // order page: Add a bunch of event listeners
 
@@ -260,7 +263,29 @@ async function updateholes(course) { //updates the hole selection drop down base
             `
             <option value="${i}">${i}</option>
             `
-            )
+            ) 
           }
 
+}
+
+async function updateimg(course) { //updates the img selection drop down based on name of course
+  let db = firebase.firestore()
+ 
+  let imgSnapshot = await db.collection('courses')
+                                     .where('name', '==', course)
+                                     .get()
+          let img = imgSnapshot.docs[0].data()
+        // console.log(img.image)
+
+  // first clear out any html in the div down to start fresh
+  document.querySelector('.image-selected').innerHTML = null
+
+  // then add new html for the img
+          
+         
+            document.querySelector('.image-selected').insertAdjacentHTML('beforeend', 
+            `
+            <img class ="rounded border mt-8 h-32 mx-auto border-white"src="${img.image}">
+
+            `)
 }
