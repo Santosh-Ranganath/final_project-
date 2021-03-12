@@ -57,33 +57,33 @@ firebase.auth().onAuthStateChanged(async function(user) {
             `
                 <form class="text-center mt-8" action="index.html">
 
-                <div class="course">
-              <label class = "text-white text-xl">Choose a Course:</label>
-              <select class = "course-selected" name="course" id="courseName">
-                
-              </select>
-              </div>
-              
-              <div class="hole mt-8">
-                  <label class = "text-white text-xl mt-8">Hole Location:</label>
-                  <select class = "hole-selected" name="hole" id="holeNumber">
+
+              <div class="md:flex">
+                  <div class="md:w-1/3">
+                      <div class=" course">
+                          <label class = "text-white text-xl">Choose a Course:</label>
+                          <select class = "course-selected" name="course" id="courseName">
+                                </select>
+                      </div>
                     
-                  </select>
-              </div>
-              
+                      <div class=" hole mt-8">
+                          <label class = "text-white text-xl mt-8">Hole Location:</label>
+                          <select class = "hole-selected" name="hole" id="holeNumber">
+                            
+                          </select>
+                      </div>
+                  </div>
            
-                  <button class="premium-button mt-8 block mx-auto text-white bg-blue-400 rounded px-4 py-8 hover:bg-red-500">Request Premium Service <p>(ETA: ${premiumTime}) </button> 
-            
-              
-              
-                  <button class="standard-button mt-8 block mx-auto text-white bg-gray-400 rounded px-4 py-8 hover:bg-red-500 mb-2">Request Standard Service <p>(ETA: ${standardTime})</p></button> 
-             
-              
+                  <div class="md:w-1/3">
+                      <button class="premium-button mt-8 block mx-auto text-white bg-blue-400 rounded px-4 py-8 hover:bg-red-500">Request Premium Service <p>(ETA: ${premiumTime}) </button> 
+                
+                      <button class="standard-button mt-8 block mx-auto text-white bg-gray-400 rounded px-4 py-8 hover:bg-red-500 mb-2">Request Standard Service <p>(ETA: ${standardTime})</p></button> 
+                  </div>
+
+                  <div class = "md:w-1/3 image-selected"> </div>
+              </div>
               
               </form>
-              
-              <div class = "image-selected"> </div>
-              
             
             `
 
@@ -128,7 +128,6 @@ firebase.auth().onAuthStateChanged(async function(user) {
                 
                 let hole = document.querySelector('.hole-selected').value
                 // will need to add error handling later if no course/hole selected
-
                 console.log(`${course}-hole${hole}`)
                 let ordertime = currentTime
                 
@@ -136,7 +135,6 @@ firebase.auth().onAuthStateChanged(async function(user) {
                 let userID = user.uid
                 let status = 'pending'
                
-
                 // send this info to firebase (move to lambda function later)
 
                 let order = {
@@ -285,12 +283,11 @@ async function updateimg(course) { //updates the img selection drop down based o
   // first clear out any html in the div down to start fresh
   document.querySelector('.image-selected').innerHTML = null
 
-  // then add new html for the img
+  // then add new html for the imgs
           
          
             document.querySelector('.image-selected').insertAdjacentHTML('beforeend', 
             `
-            <img class ="rounded border mt-8 h-32 mx-auto border-white"src="${img.image}">
-
+            <img class ="rounded border mt-8 mx-auto h-32 border-white"src="${img.image}">
             `)
 }
