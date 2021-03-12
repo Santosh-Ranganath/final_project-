@@ -7,20 +7,22 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
     // Time information Calculation for entire script 
     let currentDate = new Date() 
-    let currentHour = (currentDate.getHours() < 10) ? "0" + currentDate.getHours() : currentDate.getHours()
-    let currentMinute = (currentDate.getMinutes() < 10) ? "0" + currentDate.getMinutes() : currentDate.getMinutes()
-    let currentTime = currentHour + ":" + currentMinute 
-    // console.log(currentDate)
+    // let currentHour = (currentDate.getHours() < 10) ? "0" + currentDate.getHours() : currentDate.getHours()
+    // let currentMinute = (currentDate.getMinutes() < 10) ? "0" + currentDate.getMinutes() : currentDate.getMinutes()
+    let currentTime = currentDate.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true, minute: 'numeric' });
+    // console.log(currentTime)
     let fifteenminutesLater = new Date(currentDate.getTime() + (15*60*1000))
-    let formatHour = (fifteenminutesLater.getHours() < 10) ? "0" + fifteenminutesLater.getHours() : fifteenminutesLater.getHours()
-    let formatMinute = (fifteenminutesLater.getMinutes() < 10) ? "0" + fifteenminutesLater.getMinutes() : fifteenminutesLater.getMinutes()
-    let standardTime = formatHour + ":" + formatMinute
+    // let formatHour = (fifteenminutesLater.getHours() < 10) ? "0" + fifteenminutesLater.getHours() : fifteenminutesLater.getHours()
+    // let formatMinute = (fifteenminutesLater.getMinutes() < 10) ? "0" + fifteenminutesLater.getMinutes() : fifteenminutesLater.getMinutes()
+    let standardTime = fifteenminutesLater.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true, minute: 'numeric' });
 
     let fiveminutesLater = new Date(currentDate.getTime() + (5*60*1000))
-    let formatHourPremium = (fiveminutesLater.getHours() < 10) ? "0" + fiveminutesLater.getHours() : fiveminutesLater.getHours()
-    let formatMinutePremium = (fiveminutesLater.getMinutes() < 10) ? "0" + fiveminutesLater.getMinutes() : fiveminutesLater.getMinutes()
-    let premiumTime = formatHourPremium + ":" + formatMinutePremium
-    // console.log(`Your ETA is ${premiumTime} `)
+    // let formatHourPremium = (fiveminutesLater.getHours() < 10) ? "0" + fiveminutesLater.getHours() : fiveminutesLater.getHours()
+    // let formatMinutePremium = (fiveminutesLater.getMinutes() < 10) ? "0" + fiveminutesLater.getMinutes() : fiveminutesLater.getMinutes()
+    let premiumTime = fiveminutesLater.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true, minute: 'numeric' });
+    // let waitTime = (fifteenminutesLater-fiveminutesLater)/60000
+    // console.log(`Your ETA is ${waitTime} `)
+    // console.log((fifteenminutesLater-fiveminutesLater)/60000)
 
     //adds the navigation buttons only when a user is logged in 
     document.querySelector('.navigation').insertAdjacentHTML('beforeend',
@@ -144,7 +146,43 @@ firebase.auth().onAuthStateChanged(async function(user) {
                   priority: priority,
                   userID: userID,
                   status: status,
-                  promisetime: standardTime
+                  promisetime: fifteenminutesLater
+                  // add some complexity later for dynamic wait times based on order volume?
+                }
+                
+                let db = firebase.firestore()
+                let docRef =  await db.collection('orders').add(order)
+                let ordernum = docRef.id
+                // refresh page, which will move us to a pending order screen
+                document.location.href = 'index.html'
+              })
+
+              //Start of Premium Button Event Listener 
+              let prem_order = document.querySelector('.premium-button')
+              prem_order.addEventListener('click', async function(event){
+                event.preventDefault()
+                
+                course = document.querySelector('.course-selected').value
+                
+                let hole = document.querySelector('.hole-selected').value
+                // will need to add error handling later if no course/hole selected
+                console.log(`${course}-hole${hole}`)
+                let ordertime = currentTime
+                
+                let priority = 'PREMIUM'
+                let userID = user.uid
+                let status = 'pending'
+               
+                // send this info to firebase (move to lambda function later)
+
+                let order = {
+                  course: course,
+                  hole: hole,
+                  ordertime: ordertime,
+                  priority: priority,
+                  userID: userID,
+                  status: status,
+                  promisetime: fiveminutesLater
                   // add some complexity later for dynamic wait times based on order volume?
                 }
                 
@@ -161,16 +199,19 @@ firebase.auth().onAuthStateChanged(async function(user) {
               let orderdetails = querySnapshot.docs[0].data()
               // console.log(orderdetails)
               let ordernum = querySnapshot.docs[0].id
-              let timeleft = orderdetails.promisetime - currentTime          
-              console.log(currentTime)
-              console.log(orderdetails.promisetime)
-              console.log(timeleft)
+              let timeleft = (orderdetails.promisetime.seconds-(currentDate.getTime()/1000))/60
+              let display = Number((timeleft).toFixed(0))
+              
+              // console.log(currentDate)
+              // console.log(currentDate.getTime()/1000)
+              // console.log(orderdetails.promisetime.seconds)
+              // console.log(display)
               // update html to display order details and wait time
               document.querySelector('.orderdetails').innerHTML =  
               `
               <div class="mt-8 ">
                   <h1 class="text-center text-2xl text-white"> Attendant Requested!</h1>
-                  <h2 class="text-center text-2xl text-white"> ETA: ${timeleft}</h2>
+                  <h2 class="text-center text-2xl text-white"> ETA: ${display} Minutes</h2>
               </div>
 
               <div class="mt-8">
