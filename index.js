@@ -207,6 +207,8 @@ firebase.auth().onAuthStateChanged(async function(user) {
               // console.log(orderdetails.promisetime.seconds)
               // console.log(display)
               // update html to display order details and wait time
+
+            if (display >=0 ) {
               document.querySelector('.orderdetails').innerHTML =  
               `
               <div class="mt-8 ">
@@ -223,7 +225,26 @@ firebase.auth().onAuthStateChanged(async function(user) {
               </div>
 
               <img class ="rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
-              `
+              `} 
+              else {
+                document.querySelector('.orderdetails').innerHTML =  
+                `
+                <div class="mt-8 ">
+                    <h1 class="text-center text-2xl text-white"> Attendant Requested!</h1>
+                    <h2 class="text-center text-2xl text-white"> Order delivered! Cheers!</h2>
+                </div>
+  
+                <div class="mt-8">
+                    <button class="cancel block mx-auto text-white bg-red-600 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Cancel Request</button> 
+                </div>
+  
+                <div class=" mt-8">
+                    <button class="complete block mx-auto text-white bg-blue-500 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Order Complete</button> 
+                </div>
+  
+                <img class ="rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
+                `
+              }
         
         // add event listeners to buttons
             
