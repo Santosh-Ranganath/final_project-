@@ -77,16 +77,15 @@ firebase.auth().onAuthStateChanged(async function(user) {
                   </div>
            
                   <div class="md:w-1/3">
-                      <button class="premium-button mt-8 block mx-auto text-white bg-blue-400 rounded px-4 py-8 hover:bg-red-500">Request Premium Service <p>(ETA: ${premiumTime}) </button> 
+                      <button class="premium-button mt-8 block mx-auto text-white bg-blue-400 rounded px-4 py-8 hover:bg-red-500">Request Premium Service - $5 <p>(ETA: ${premiumTime}) </button> 
                 
-                      <button class="standard-button mt-8 block mx-auto text-white bg-gray-400 rounded px-4 py-8 hover:bg-red-500 mb-2">Request Standard Service <p>(ETA: ${standardTime})</p></button> 
+                      <button class="standard-button mt-8 block mx-auto text-white bg-gray-400 rounded px-4 py-8 hover:bg-red-500 mb-2">Request Standard Service - Free <p>(ETA: ${standardTime})</p></button> 
                   </div>
 
                   <div class = "md:w-1/3 image-selected"> </div>
               </div>
               
-              </form>
-            
+              </form> 
             `
 
         // dynamically update course selection from firebase
@@ -194,7 +193,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
               })
  
       }
-      else {  // there's a pending order, so display that info and a cancel button 
+      else {  // there's a pending order, so display that info and a complete/cancel button 
 
               let orderdetails = querySnapshot.docs[0].data()
               // console.log(orderdetails)
@@ -208,43 +207,42 @@ firebase.auth().onAuthStateChanged(async function(user) {
               // console.log(display)
               // update html to display order details and wait time
 
+              let displaytext
             if (display >=0 ) {
+
+              displaytext = `
+                  <h1 class="text-center text-2xl text-white"> Attendant Requested!</h1>
+                  <h2 class="text-center text-2xl text-white"> ETA: ${display} Minutes</h2>            
+                   `
+            }
+            else {
+              displaytext = `
+              <h1 class="text-center text-2xl text-white"></h1>
+              <h2 class="text-center text-2xl text-white"> Order Due! Cheers!</h2> 
+              `
+              }
+
               document.querySelector('.orderdetails').innerHTML =  
               `
-              <div class="mt-8 ">
-                  <h1 class="text-center text-2xl text-white"> Attendant Requested!</h1>
-                  <h2 class="text-center text-2xl text-white"> ETA: ${display} Minutes</h2>
-              </div>
+              <div class="flex">
+                    <div class="md:w-1/3 mt-8 ">
+                        ${displaytext}
+                    </div>
 
-              <div class="mt-8">
-                  <button class="cancel block mx-auto text-white bg-red-600 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Cancel Request</button> 
-              </div>
+                    <div class="md:w-1/3">
+                          <div class="mt-8">
+                              <button class="cancel block mx-auto text-white bg-red-600 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Cancel Request</button> 
+                          </div>
+                          <div class=" mt-8">
+                              <button class="complete block mx-auto text-white bg-blue-500 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Order Complete</button> 
+                          </div>
+                    </div>
 
-              <div class=" mt-8">
-                  <button class="complete block mx-auto text-white bg-blue-500 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Order Complete</button> 
+                    <div class="md:w-1/3">
+                      <img class ="rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
+                    </div>
               </div>
-
-              <img class ="rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
-              `} 
-              else {
-                document.querySelector('.orderdetails').innerHTML =  
-                `
-                <div class="mt-8 ">
-                    <h1 class="text-center text-2xl text-white"> Attendant Requested!</h1>
-                    <h2 class="text-center text-2xl text-white"> Order delivered! Cheers!</h2>
-                </div>
-  
-                <div class="mt-8">
-                    <button class="cancel block mx-auto text-white bg-red-600 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Cancel Request</button> 
-                </div>
-  
-                <div class=" mt-8">
-                    <button class="complete block mx-auto text-white bg-blue-500 rounded px-14 py-2 hover:bg-yellow-500 mb-2">Order Complete</button> 
-                </div>
-  
-                <img class ="rounded border mt-8 h-32 mx-auto border-white"src="https://golf.com/wp-content/uploads/2020/07/GettyImages-996178446.jpg">
-                `
-              }
+                      `
         
         // add event listeners to buttons
             
