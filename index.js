@@ -24,6 +24,12 @@ firebase.auth().onAuthStateChanged(async function(user) {
     // console.log(`Your ETA is ${waitTime} `)
     // console.log((fifteenminutesLater-fiveminutesLater)/60000)
 
+    console.log('play w/numbers')
+    console.log(fifteenminutesLater)
+    console.log(fifteenminutesLater.getFullYear())
+    console.log(fifteenminutesLater.getMinutes())
+    console.log(fifteenminutesLater.getMonth())
+
     //adds the navigation buttons only when a user is logged in 
     document.querySelector('.navigation').insertAdjacentHTML('beforeend',
     `<a href ="index.html" class = "sign-out text-white text-md bg-blue-600 rounded p-2 hover:bg-yellow-300 text-center">Logout</a>
@@ -36,24 +42,27 @@ firebase.auth().onAuthStateChanged(async function(user) {
       document.location.href = 'index.html'
     })
 
-    // pull in information on current courses available--is this 4 arrays of 4 vs. 1 array of 4?
-      let courseSnapshot = await db.collection('courses').orderBy('name').get()
-      let courses = []
-      for (i=0; i<courseSnapshot.size; i++){
-        courses[i] = courseSnapshot.docs[i].data()
-      }
+    // pull in information on current courses available
+     
+      let response = await fetch('/.netlify/functions/get_courses')
+      let courses = await response.json()
+      console.log(courses)
 
     // direct traffic based on who logged in
         // if user doesn't have a pending order, direct them to the order page
         // if user has a pending order, direct them to that page
-        console.log(user.uid)
-        let querySnapshot = await db.collection('orders')
-              .where('userID', '==', user.uid)
-              .where('status', '==', 'pending')
-              .get()
+
+        response = await fetch('/.netlify/functions/get_order', {
+          method: 'POST',
+          body: JSON.stringify({
+            userId: user.uid,
+          })
+        })
+        let orderdetails = await response.json()
+       
         
-          console.log(querySnapshot.size)
-      if (querySnapshot.size == 0){// there's no pending orders, display order page
+         
+      if (orderdetails == null){// there's no pending orders, display order page
           // add html to create the order page
             document.querySelector('.order-page').innerHTML = 
             `
@@ -77,7 +86,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
                   </div>
            
                   <div class="md:w-1/3">
-                      <button class="premium-button mt-8 block mx-auto text-white bg-blue-400 rounded px-4 py-8 hover:bg-red-500">Request Premium Service - $5 <p>(ETA: ${premiumTime}) </button> 
+                      <button class="premium-button mt-8 block mx-auto text-white bg-blue-400 rounded px-4 py-8 hover:bg-red-500">Request Premium Service - $5 <p>(ETA: ${premiumTime})</button> 
                 
                       <button class="standard-button mt-8 block mx-auto text-white bg-gray-400 rounded px-4 py-8 hover:bg-red-500 mb-2">Request Standard Service - Free <p>(ETA: ${standardTime})</p></button> 
                   </div>
@@ -98,62 +107,31 @@ firebase.auth().onAuthStateChanged(async function(user) {
           }
          
         // dyanmically update the #holes and Img based on default course selection
-            updateholes(courses[0].name)
-            updateimg(courses[0].name)
+            updateholes(courses, courses[0].name)
+            updateimg(courses, courses[0].name)
+
         
         // event listener to update hole #'s and Img once a new course is selected
           document.querySelector('.course-selected').addEventListener('change', async function(event) {
             let course = document.querySelector('.course-selected').value
-            updateholes(course)
+            updateholes(courses, course)
+            updateimg(courses, course)
           })
           
-          document.querySelector('.course-selected').addEventListener('change', async function(event) {
-            let course = document.querySelector('.course-selected').value
-            updateimg(course)
-          })
+          
         
             // order page: Add a bunch of event listeners
 
-             
-        // order buttons (could probably do this with 1 section of code with a tweak based on premium vs std)
-            // put at order button in the empty div for it
-            
-        
-            // stores values from html inputs on the course and hole #, and current time
+        // order buttons 
+
+          //standard order
                 
               let std_order = document.querySelector('.standard-button')
               std_order.addEventListener('click', async function(event){
                 event.preventDefault()
                 
-                course = document.querySelector('.course-selected').value
-                
-                let hole = document.querySelector('.hole-selected').value
-                // will need to add error handling later if no course/hole selected
-                console.log(`${course}-hole${hole}`)
-                let ordertime = currentTime
-                
-                let priority = 'standard'
-                let userID = user.uid
-                let status = 'pending'
-               
-                // send this info to firebase (move to lambda function later)
+                order(user.uid, currentTime, fifteenminutesLater, 'standard')
 
-                let order = {
-                  course: course,
-                  hole: hole,
-                  ordertime: ordertime,
-                  priority: priority,
-                  userID: userID,
-                  status: status,
-                  promisetime: fifteenminutesLater
-                  // add some complexity later for dynamic wait times based on order volume?
-                }
-                
-                let db = firebase.firestore()
-                let docRef =  await db.collection('orders').add(order)
-                let ordernum = docRef.id
-                // refresh page, which will move us to a pending order screen
-                document.location.href = 'index.html'
               })
 
               //Start of Premium Button Event Listener 
@@ -161,44 +139,20 @@ firebase.auth().onAuthStateChanged(async function(user) {
               prem_order.addEventListener('click', async function(event){
                 event.preventDefault()
                 
-                course = document.querySelector('.course-selected').value
-                
-                let hole = document.querySelector('.hole-selected').value
-                // will need to add error handling later if no course/hole selected
-                console.log(`${course}-hole${hole}`)
-                let ordertime = currentTime
-                
-                let priority = 'PREMIUM'
-                let userID = user.uid
-                let status = 'pending'
-               
-                // send this info to firebase (move to lambda function later)
-
-                let order = {
-                  course: course,
-                  hole: hole,
-                  ordertime: ordertime,
-                  priority: priority,
-                  userID: userID,
-                  status: status,
-                  promisetime: fiveminutesLater
-                  // add some complexity later for dynamic wait times based on order volume?
-                }
-                
-                let db = firebase.firestore()
-                let docRef =  await db.collection('orders').add(order)
-                let ordernum = docRef.id
-                // refresh page, which will move us to a pending order screen
-                document.location.href = 'index.html'
+                order(user.uid, currentTime, fiveminutesLater, 'premium')
               })
  
       }
       else {  // there's a pending order, so display that info and a complete/cancel button 
 
-              let orderdetails = querySnapshot.docs[0].data()
+              // let orderdetails = querySnapshot.docs[0].data()
               // console.log(orderdetails)
-              let ordernum = querySnapshot.docs[0].id
-              let timeleft = (orderdetails.promisetime.seconds-(currentDate.getTime()/1000))/60
+              let t = orderdetails.promisetime
+              let promisetime = new Date(t.year, t.month, t.day, t.hours, t.minutes, t.seconds)
+              
+              
+
+              let timeleft = (promisetime/1000-(currentDate.getTime()/1000))/60
               let display = Number((timeleft).toFixed(0))
               
               // console.log(currentDate)
@@ -249,33 +203,42 @@ firebase.auth().onAuthStateChanged(async function(user) {
             // cancel button
                 // grab current order info
                     // should already be stored at this point...
-            
-                  let cancelbutton = document.querySelector('.cancel')
-             
+                         
                     // send to firebase w/ update on "status" to cancelled
                 document.querySelector('.cancel').addEventListener('click', async function(event){
-                  await db.collection('orders').doc(ordernum).update({
-                    status: 'cancelled'
+                  
+                  await fetch('/.netlify/functions/update_order', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      orderId: orderdetails.orderId,
+                      status: 'cancelled'
+                    })
                   })
+          
                   // move back to order page
                       document.location.href = 'index.html'
 
                 })
 
           // same thing for order complete button
-                    let completebutton = document.querySelector('.complete')
+                 
                       
                     // send to firebase w/ update on "status" to cancelled
                 document.querySelector('.complete').addEventListener('click', async function(event){
-                  await db.collection('orders').doc(ordernum).update({
-                    status: 'complete'
+                  
+                  await fetch('/.netlify/functions/update_order', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      orderId: orderdetails.orderId,
+                      status: 'complete'
+                    })
                   })
                   // move back to order page
                       document.location.href = 'index.html'
 
                 })
       }    
-            // refresh?  a button to refresh from firebase, or we code in an autorefresh once/min?
+
 
   
 
@@ -308,46 +271,79 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
 // Any functions created go below this line (outside the firebase stuff)
 
-async function updateholes(course) { //updates the hole selection drop down based on name of course
-  let db = firebase.firestore()
- 
-  let holeSnapshot = await db.collection('courses')
-                                     .where('name', '==', course)
-                                     .get()
-          let holes = holeSnapshot.docs[0].data()
+async function updateholes(courses, course) { //updates the hole selection drop down based on name of course
 
-  // first clear out any html in the drop down to start fresh
-  document.querySelector('.hole-selected').innerHTML = null
+        console.log('new course')
+        // first clear out any html in the drop down to start fresh
+        document.querySelector('.hole-selected').innerHTML = null
+    for (let j=0; j<courses.length; j++) {
+      
+      if(courses[j].name == course) {
+        let holes = courses[j].holes
 
-  // then add new html for the # of holes
-          
-          for (i=1; i<holes.holes+1; i++) {
-            document.querySelector('.hole-selected').insertAdjacentHTML('beforeend', 
-            `
-            <option value="${i}">${i}</option>
-            `
-            ) 
-          }
+        // then add new html for the # of holes 
+        for (i=1; i<holes+1; i++) {
+          document.querySelector('.hole-selected').insertAdjacentHTML('beforeend', 
+          `
+          <option value="${i}">${i}</option>
+          `
+          ) 
+        }
+      }
+    }
+
+  
+  
 
 }
 
-async function updateimg(course) { //updates the img selection drop down based on name of course
-  let db = firebase.firestore()
- 
-  let imgSnapshot = await db.collection('courses')
-                                     .where('name', '==', course)
-                                     .get()
-          let img = imgSnapshot.docs[0].data()
-        // console.log(img.image)
+async function updateimg(courses, course) { //updates the img selection drop down based on name of course
+
 
   // first clear out any html in the div down to start fresh
   document.querySelector('.image-selected').innerHTML = null
 
   // then add new html for the imgs
           
-         
-            document.querySelector('.image-selected').insertAdjacentHTML('beforeend', 
-            `
-            <img class ="rounded border mt-8 mx-auto h-32 border-white"src="${img.image}">
-            `)
+      for (let i=0;i<courses.length;i++){
+        if(courses[i].name == course) {
+               document.querySelector('.image-selected').insertAdjacentHTML('beforeend', 
+                  `
+                  <img class ="rounded border mt-8 mx-auto h-32 border-white"src="${courses[i].image}">
+                  `)
+        }
+      }     
 }
+
+async function order(userId, currentTime, promisetime, service) {
+
+  // send this info to firebase (move to lambda function later)
+
+  await fetch('/.netlify/functions/place_order', {
+    method: 'POST',
+    body: JSON.stringify({
+      course: document.querySelector('.course-selected').value,
+      hole: document.querySelector('.hole-selected').value,
+      ordertime: currentTime,
+      priority: service,
+      userID: userId,
+      status: 'pending',
+      promisetime: {
+          year: promisetime.getFullYear(),
+          month: promisetime.getMonth(),
+          day: promisetime.getDate(),
+          hours: promisetime.getHours(),
+          minutes: promisetime.getMinutes(),
+          seconds: promisetime.getSeconds(),
+      }
+    })
+  })
+
+
+
+  // refresh page, which will move us to a pending order screen
+  document.location.href = 'index.html'
+
+
+}
+
