@@ -1,3 +1,4 @@
+console.log('running js')
 firebase.auth().onAuthStateChanged(async function(user) {
 
   if (user) { // Signed in
