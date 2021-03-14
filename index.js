@@ -3,7 +3,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
   if (user) { // Signed in
  
     console.log('signed in')
-    let db = firebase.firestore()
+    
 
     // Time information Calculation for entire script 
     let currentDate = new Date() 
@@ -178,7 +178,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
               document.querySelector('.orderdetails').innerHTML =  
               `
-              <div class="flex">
+              <div class="md:flex">
                     <div class="md:w-1/3 mt-8 ">
                         ${displaytext}
                     </div>
